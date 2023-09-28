@@ -1,0 +1,53 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: windsage-sensor
+spec:
+  template:
+    serviceAccountName: argo-events-sa
+  dependencies:
+  - name: payload
+    eventSourceName: windsage-webhook
+    eventName: windsage
+  triggers:
+  - template:
+      name: windsage
+      k8s:
+        group: ""
+        version: v1
+        resource: pods
+        operation: create
+        source:
+          resource:
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              generateName: windsage-
+              labels:
+                app: windsage
+            spec:
+              containers:
+              - name: hello
+                image: alpine
+                command: ["echo"]
+                args:
+                - "This is the ref you sent me:\n"
+                - ""
+                - "\nThis is the commit hash:\n"
+                - ""
+                - "\nThis is the repo address:\n"
+                - ""
+              restartPolicy: Never
+        parameters:
+          - src:
+              dependencyName: payload
+              dataKey: body.ref
+            dest: spec.containers.1.args.1
+          - src:
+              dependencyName: payload
+              dataKey: body.commits.0.id
+            dest: spec.containers.1.args.2
+          - src:
+              dependencyName: payload
+              dataKey: body.repository.full_name
+            dest: spec.containers.1.args.3
