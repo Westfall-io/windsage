@@ -37,6 +37,18 @@ spec:
                 - ""
                 - "\nThis is the repo address:\n"
                 - ""
+              - name: publish
+                image: westfallio/windsage:0.1.0
+                command: ["python"]
+                env:
+                - name: SQLHOST
+                  value: postgres-postgresql.windstorm:5432
+                args:
+                - "main.py"
+                - ""
+                - ""
+                - ""
+                - ""
               restartPolicy: Never
         parameters:
           - src:
@@ -51,3 +63,19 @@ spec:
               dependencyName: payload
               dataKey: body.repository.full_name
             dest: spec.containers.1.args.3
+          - src:
+              dependencyName: payload
+              dataKey: body.ref
+            dest: spec.containers.1.args.1
+          - src:
+              dependencyName: payload
+              dataKey: body.commits.0.id
+            dest: spec.containers.1.args.2
+          - src:
+              dependencyName: payload
+              dataKey: body.repository.full_name
+            dest: spec.containers.1.args.3
+          - src:
+              dependencyName: payload
+              dataKey: body.commits.0.url
+            dest: spec.containers.1.args.4
