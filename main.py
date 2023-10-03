@@ -20,6 +20,11 @@ class Artifacts(Base):
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     full_name: Mapped[str] = mapped_column(db.String(255), nullable=False)
     commit_url: Mapped[str] = mapped_column(db.String(), nullable=False)
+
+class Artifacts_Commits(Base):
+    __tablename__ = "artifact_commits"
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    artifacts_id: Mapped[int] = mapped_column(db.ForeignKey("artifacts.id"))
     ref: Mapped[str] = mapped_column(db.String(255))
     commit: Mapped[str] = mapped_column(db.String(255))
     date: Mapped[datetime] = mapped_column(default=None)
@@ -44,14 +49,35 @@ def main(ref, commit, full_name, commit_url):
     print('Pushing to database')
     c, engine = connect()
     with Session(engine) as session:
-        this_a = Artifacts(
-            full_name = full_name,
-            commit_url = commit_url,
-            ref = ref,
-            commit = commit,
-            date = datetime.now()
+
+        result = session \
+            .query(Artifacts) \
+            .filter(
+                Artifacts.full_name == full_name
+            ) \
+            .first()
+
+        if result is None:
+            this_a = Artifacts(
+                full_name = full_name,
+                commit_url = commit_url,
+            )
+            session.add(this_a)
+            session.commit()
+            result = session \
+                .query(Artifacts) \
+                .filter(
+                    Artifacts.full_name == full_name
+                ) \
+                .first()
+
+        this_ac = Artifacts_Commits(
+            artifacts_id=result.id,
+            ref=ref,
+            commit=commit,
+            date=datetime.now()
         )
-        session.add(this_a)
+        session.add(this_ac)
         session.commit()
 
     print('Closing session.')

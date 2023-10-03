@@ -38,7 +38,7 @@ spec:
                 - "\nThis is the repo address:\n"
                 - ""
               - name: publish
-                image: westfallio/windsage:0.1.0
+                image: westfallio/windsage:0.1.2
                 command: ["python"]
                 env:
                 - name: SQLHOST
