@@ -1,13 +1,34 @@
+# Copyright (c) 2023-2024 Westfall Inc.
+#
+# This file is part of Windsage.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, and can be found in the file NOTICE inside this
+# git repository.
+#
+# This program is distributed in the hope that it will be useful
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import time
 start_time = time.time()
 
 import os
 
-SQLDEF = "localhost:5432"
-SQLHOST = os.environ.get("SQLHOST",SQLDEF)
+SQLHOST = os.environ.get("SQLHOST", "localhost:5432")
+WINDSTORMHOST = os.environ.get(
+    "WINDSTORMHOST",
+    "http://windstorm-webhook-eventsource-svc.argo-events:12000/windstorm"
+)
 
 from datetime import datetime
 
+import requests
 import sqlalchemy as db
 from sqlalchemy.orm import DeclarativeBase, Mapped, \
     mapped_column, MappedAsDataclass, relationship, Session
@@ -20,6 +41,7 @@ class Artifacts(Base):
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     full_name: Mapped[str] = mapped_column(db.String(255), nullable=False)
     commit_url: Mapped[str] = mapped_column(db.String(), nullable=False)
+    default_branch: Mapped[str] = mapped_column(db.String(255))
 
 class Artifacts_Commits(Base):
     __tablename__ = "artifact_commits"
@@ -42,14 +64,19 @@ def connect():
 
     return conn, engine
 
-def main(ref, commit, full_name, commit_url):
+def main(ref, commit, full_name, commit_url, default_branch):
     print('Parsing inputs')
     ref = ref.split('/')[-1]
+
+    if ref != default_branch:
+        print('Skipping non-default branch.')
+        return
 
     print('Pushing to database')
     c, engine = connect()
     with Session(engine) as session:
-
+        # Find all artifacts with this full name
+        # Ex: "full_name": "Westfall/sysml_workflow"
         result = session \
             .query(Artifacts) \
             .filter(
@@ -58,33 +85,62 @@ def main(ref, commit, full_name, commit_url):
             .first()
 
         if result is None:
+            # This artifact repo has never been seen, add it to the db.
             this_a = Artifacts(
                 full_name = full_name,
                 commit_url = commit_url,
+                default_branch = default_branch
             )
             session.add(this_a)
             session.commit()
-            result = session \
-                .query(Artifacts) \
-                .filter(
-                    Artifacts.full_name == full_name
-                ) \
-                .first()
 
-        this_ac = Artifacts_Commits(
-            artifacts_id=result.id,
-            ref=ref,
-            commit=commit,
-            date=datetime.now()
-        )
-        session.add(this_ac)
-        session.commit()
+            # Grab the result again after it was commited, so that in either
+            # case, result.id is the artifact id.
+            session.refresh(this_a)
+            artifact_id = this_a.id
+        else:
+            # Grab the id
+            artifact_id = result.id
+
+            # See if we need to update the default branch
+            if result.default_branch != ref:
+                result = session \
+                    .query(Artifacts) \
+                    .filter(
+                        Artifacts.id == artifact_id
+                    ) \
+                    .update({'default_branch': default_branch})
+                session.commit()
+
+        result = session \
+            .query(Artifacts_Commits) \
+            .filter(
+                Artifacts_Commits.ref == ref,
+                Artifacts_Commits.commit == commit
+            ) \
+            .first()
+
+        if result is None:
+            # Create a new commit to refresh the head.
+            this_ac = Artifacts_Commits(
+                artifacts_id=artifact_id,
+                ref=ref,
+                commit=commit,
+                date=datetime.now()
+            )
+            session.add(this_ac)
+            session.commit()
 
     print('Closing session.')
     c.close()
     engine.dispose()
 
-    #requests.post(WINDSTORMHOST, json={'ref'=ref, 'commit':commit})
+    requests.post(WINDSTORMHOST, json = {
+        'source' : 'sage',
+        'payload' : {
+            'artifact_id': artifact_id
+        }
+    })
 
 if __name__ == '__main__':
     import fire

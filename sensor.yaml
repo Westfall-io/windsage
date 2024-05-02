@@ -27,18 +27,8 @@ spec:
                 app: windsage
             spec:
               containers:
-              - name: hello
-                image: alpine
-                command: ["echo"]
-                args:
-                - "This is the ref you sent me:\n"
-                - ""
-                - "\nThis is the commit hash:\n"
-                - ""
-                - "\nThis is the repo address:\n"
-                - ""
               - name: publish
-                image: westfallio/windsage:0.1.2
+                image: core.harbor.domain/digitalforge/windsage:0.1.6
                 command: ["python"]
                 env:
                 - name: SQLHOST
@@ -49,33 +39,26 @@ spec:
                 - ""
                 - ""
                 - ""
+                - ""
               restartPolicy: Never
         parameters:
           - src:
               dependencyName: payload
               dataKey: body.ref
-            dest: spec.containers.1.args.1
+            dest: spec.containers.0.args.1
           - src:
               dependencyName: payload
               dataKey: body.commits.0.id
-            dest: spec.containers.1.args.2
+            dest: spec.containers.0.args.2
           - src:
               dependencyName: payload
               dataKey: body.repository.full_name
-            dest: spec.containers.1.args.3
-          - src:
-              dependencyName: payload
-              dataKey: body.ref
-            dest: spec.containers.1.args.1
-          - src:
-              dependencyName: payload
-              dataKey: body.commits.0.id
-            dest: spec.containers.1.args.2
-          - src:
-              dependencyName: payload
-              dataKey: body.repository.full_name
-            dest: spec.containers.1.args.3
+            dest: spec.containers.0.args.3
           - src:
               dependencyName: payload
               dataKey: body.commits.0.url
-            dest: spec.containers.1.args.4
+            dest: spec.containers.0.args.4
+          - src:
+              dependencyName: payload
+              dataKey: body.repository.default_branch
+            dest: spec.containers.0.args.5
