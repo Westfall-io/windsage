@@ -28,7 +28,7 @@ spec:
             spec:
               containers:
               - name: publish
-                image: core.harbor.domain/digitalforge/windsage:0.1.6
+                image: docker.io/westfall.io/windsage:0.1.0
                 command: ["python"]
                 env:
                 - name: SQLHOST
