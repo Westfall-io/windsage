@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.1.3 (2024-11-06)
+
+### :bug:
+
+* :bug: Adding environment vars file ([`c2c4ff3`](https://github.com/Westfall-io/windsage/commit/c2c4ff3c383b9a28df7726bf2610c6a70554f557))
+
 ## v0.1.2 (2024-11-06)
 
 ### :bug:
