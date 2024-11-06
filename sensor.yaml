@@ -33,8 +33,23 @@ spec:
                 env:
                 - name: SQLHOST
                   value: postgres-postgresql.windstorm:5432
+                - name: DBUSER  # name of env var
+                  valueFrom:
+                    secretKeyRef:
+                      name: dbparams     # name of an existing k8s secret
+                      key: username     # 'key' subcomponent of the secret
+                - name: DBPASS  # name of env var
+                  valueFrom:
+                    secretKeyRef:
+                      name: dbparams     # name of an existing k8s secret
+                      key: password     # 'key' subcomponent of the secret
+                - name: DBTABLE  # name of env var
+                  valueFrom:
+                    secretKeyRef:
+                      name: dbparams     # name of an existing k8s secret
+                      key: table     # 'key' subcomponent of the secret
                 args:
-                - "main.py"
+                - "src/main.py"
                 - ""
                 - ""
                 - ""
