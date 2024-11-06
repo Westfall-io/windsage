@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.1.4 (2024-11-06)
+
+### :bug:
+
+* :bug: Adding handling failure to connect to downstream webhooks ([`c95663a`](https://github.com/Westfall-io/windsage/commit/c95663ad160a2f7f7983fad4570c40113ac1b9bb))
+
 ## v0.1.3 (2024-11-06)
 
 ### :bug:
