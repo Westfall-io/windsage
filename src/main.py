@@ -129,12 +129,15 @@ def main(ref, commit, full_name, commit_url, default_branch):
     c.close()
     engine.dispose()
 
-    requests.post(WINDSTORMHOST, json = {
-        'source' : 'sage',
-        'payload' : {
-            'artifact_id': artifact_id
-        }
-    })
+    try:
+        requests.post(WINDSTORMHOST, json = {
+            'source' : 'sage',
+            'payload' : {
+                'artifact_id': artifact_id
+            }
+        })
+    except:
+        print('Could not connect to windstorm webhook endpoint.')
 
 if __name__ == '__main__':
     import fire
