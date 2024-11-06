@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.1.2 (2024-11-06)
+
+### :bug:
+
+* :bug: Fixing env ([`9ac8797`](https://github.com/Westfall-io/windsage/commit/9ac879752f1c6ebed940f258fffc577bf437799a))
+
 ## v0.1.1 (2024-11-06)
 
 ### :zap:
