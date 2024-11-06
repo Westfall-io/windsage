@@ -15,16 +15,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from env import *
+
 import time
 start_time = time.time()
-
-import os
-
-SQLHOST = os.environ.get("SQLHOST", "localhost:5432")
-WINDSTORMHOST = os.environ.get(
-    "WINDSTORMHOST",
-    "http://windstorm-webhook-eventsource-svc.argo-events:12000/windstorm"
-)
 
 from datetime import datetime
 
@@ -53,10 +47,10 @@ class Artifacts_Commits(Base):
 
 def connect():
     db_type = "postgresql"
-    user = "postgres"
-    passwd = "mysecretpassword"
+    user = DBUSER
+    passwd = DBPASS
     address = SQLHOST
-    db_name = "sysml2"
+    db_name = DBTABLE
 
     address = db_type+"://"+user+":"+passwd+"@"+address+"/"+db_name
     engine = db.create_engine(address)
