@@ -110,7 +110,7 @@ def main(ref, commit, full_name, commit_url, default_branch):
             .query(Artifacts_Commits) \
             .filter(
                 Artifacts_Commits.ref == ref,
-                Artifacts_Commits.commit == commit
+                Artifacts_Commits.commit == str(commit)
             ) \
             .first()
 
@@ -119,7 +119,7 @@ def main(ref, commit, full_name, commit_url, default_branch):
             this_ac = Artifacts_Commits(
                 artifacts_id=artifact_id,
                 ref=ref,
-                commit=commit,
+                commit=str(commit),
                 date=datetime.now()
             )
             session.add(this_ac)

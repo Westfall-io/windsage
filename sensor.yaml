@@ -28,7 +28,7 @@ spec:
             spec:
               containers:
               - name: publish
-                image: docker.io/westfallio/windsage:v0.1.3
+                image: docker.io/westfallio/windsage:v0.1.4
                 command: ["python"]
                 env:
                 - name: SQLHOST
