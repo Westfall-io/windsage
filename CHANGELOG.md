@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.1.5 (2024-12-03)
+
+### :bug:
+
+* :bug: Fixed an issue where the commit hash was not parsed as string ([`f7d3ecd`](https://github.com/Westfall-io/windsage/commit/f7d3ecdc1f738c740d19945038adff37456cb004))
+
 ## v0.1.4 (2024-11-06)
 
 ### :bug:

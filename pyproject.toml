@@ -65,7 +65,7 @@ patch_tags = [
 
 [project]
 name = "windsage"
-version = "0.1.4"
+version = "0.1.5"
 authors = [
   { name="Christopher Cox", email="chris.cox@westfall.io" },
 ]
