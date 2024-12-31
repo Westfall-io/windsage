@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v0.2.1-dev.1 (2024-12-31)
+
+### :bug:
+
+* :bug: Fixed an issue with invalid yaml ([`f75d048`](https://github.com/Westfall-io/windsage/commit/f75d04854b2181011cb207ec3d97ccb7632a130a))
+
+### :zap:
+
+* :zap: Adding multibranch support ([`fcae1e9`](https://github.com/Westfall-io/windsage/commit/fcae1e99a15d6687a5764b35bb60108fe9db238b))
+
+* :zap: Adding multibranch support ([`7e31d73`](https://github.com/Westfall-io/windsage/commit/7e31d73bf5c1850bf7652b6ee11f049793faba0d))
+
 ## v0.2.0 (2024-12-31)
 
 ### :sparkles:
