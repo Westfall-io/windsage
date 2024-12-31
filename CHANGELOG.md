@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.2.0 (2024-12-31)
+
+### :sparkles:
+
+* :sparkles: Migrating from minikube version to fully hosted k8s ([`2961f60`](https://github.com/Westfall-io/windsage/commit/2961f60233284906eeac493ebdb9ec79b22fdab9))
+
 ## v0.1.5 (2024-12-03)
 
 ### :bug:
