@@ -1,0 +1,51 @@
+name: Docker
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+on:
+  push:
+    branches: [ "dev" ]
+    # Publish semver tags as releases.
+    #tags: [ 'v*.*.*' ]
+  #workflow_run:
+  #  workflows: ["Semantic Versioning"]
+  #  types:
+  #    - completed
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: docker.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: westfallio/windsage
+
+permissions: write-all
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    #permissions:
+    #  contents: read
+    #  packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+    #  id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Python Semantic Release 📦 to PyPI
+        id: release
+        uses: python-semantic-release/python-semantic-release@v9.8.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Publish package to GitHub Release
+      uses: python-semantic-release/upload-to-gh-release@main
+      if: ${{ steps.release.outputs.released }} == 'true'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ steps.release.outputs.tag }}
