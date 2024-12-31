@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## v0.2.1-dev.2 (2024-12-31)
+
 ## v0.2.1-dev.1 (2024-12-31)
 
 ### :bug:
@@ -7,6 +9,8 @@
 * :bug: Fixed an issue with invalid yaml ([`f75d048`](https://github.com/Westfall-io/windsage/commit/f75d04854b2181011cb207ec3d97ccb7632a130a))
 
 ### :zap:
+
+* :zap: Adding docker build to dev branch ([`596293f`](https://github.com/Westfall-io/windsage/commit/596293fd32f1c5d857027ad2e2aa8246e21ca0b9))
 
 * :zap: Adding multibranch support ([`fcae1e9`](https://github.com/Westfall-io/windsage/commit/fcae1e99a15d6687a5764b35bb60108fe9db238b))
 
