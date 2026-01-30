@@ -27,10 +27,35 @@ import sqlalchemy as db
 from sqlalchemy.orm import DeclarativeBase, Mapped, \
     mapped_column, MappedAsDataclass, relationship, Session
 
+"""Windsage entrypoint.
+
+This module parses incoming artifact/commit information (the `main` function),
+records artifacts and artifact commits into a PostgreSQL database using
+SQLAlchemy ORM models, and notifies a Windstorm webhook after updating the
+database. Configuration values (DB host/user/password/table and the
+Windstorm webhook URL) are provided by `src/env.py`.
+
+This script is intended to be invoked via the `fire` CLI wrapper in
+`if __name__ == '__main__':` so that the `main` function maps to CLI
+arguments.
+"""
+
 class Base(MappedAsDataclass, DeclarativeBase):
-    """subclasses will be converted to dataclasses"""
+    """Base declarative class for SQLAlchemy models.
+
+    Subclasses will be emitted as Python dataclasses when ORM models are
+    instantiated which makes them convenient to work with and serialise.
+    """
 
 class Artifacts(Base):
+    """Represents a tracked artifact repository.
+
+    Fields:
+    - `id`: primary key
+    - `full_name`: repository full name (e.g. "owner/repo")
+    - `commit_url`: URL template or link to the repository commits
+    - `default_branch`: name of the repository's default branch
+    """
     __tablename__ = "artifacts"
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     full_name: Mapped[str] = mapped_column(db.String(255), nullable=False)
@@ -38,6 +63,14 @@ class Artifacts(Base):
     default_branch: Mapped[str] = mapped_column(db.String(255))
 
 class Artifacts_Commits(Base):
+    """Represents a recorded commit for a tracked artifact.
+
+    Fields:
+    - `artifacts_id`: foreign key to `Artifacts.id`
+    - `ref`: branch/ref name
+    - `commit`: commit SHA
+    - `date`: timestamp when the commit was recorded
+    """
     __tablename__ = "artifact_commits"
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     artifacts_id: Mapped[int] = mapped_column(db.ForeignKey("artifacts.id"))
@@ -46,6 +79,11 @@ class Artifacts_Commits(Base):
     date: Mapped[datetime] = mapped_column(default=None)
 
 def connect():
+    """Create a SQLAlchemy engine and connection.
+
+    Returns a tuple `(connection, engine)`. The connection should be closed
+    and the engine disposed by the caller when finished.
+    """
     db_type = "postgresql"
     user = DBUSER
     passwd = DBPASS
@@ -59,9 +97,22 @@ def connect():
     return conn, engine
 
 def main(ref, commit, full_name, commit_url, default_branch):
+    """Process a single artifact/commit event.
+
+    Parameters
+    - `ref`: the full ref string (often `refs/heads/<branch>`). The code
+      reduces this to the final element and only processes events for the
+      repository's default branch.
+    - `commit`: commit SHA or identifier
+    - `full_name`: repository full name (e.g. "owner/repo")
+    - `commit_url`: URL for commit/compare pages (stored for reference)
+    - `default_branch`: repository's default branch name
+    """
     print('Parsing inputs')
+    # Normalize ref (e.g. from "refs/heads/main" -> "main")
     ref = ref.split('/')[-1]
 
+    # Only record commits that are on the repository's default branch
     if ref != default_branch:
         print('Skipping non-default branch.')
         return
@@ -106,6 +157,7 @@ def main(ref, commit, full_name, commit_url, default_branch):
                     .update({'default_branch': default_branch})
                 session.commit()
 
+        # See if this exact commit/ref pair already exists to avoid duplicates
         result = session \
             .query(Artifacts_Commits) \
             .filter(
@@ -129,6 +181,9 @@ def main(ref, commit, full_name, commit_url, default_branch):
     c.close()
     engine.dispose()
 
+    # Notify Windstorm that the artifact's head has been updated. Failures
+    # to connect to the webhook are non-fatal for the DB update, so catch
+    # and log but do not raise.
     try:
         requests.post(WINDSTORMHOST, json = {
             'source' : 'sage',
